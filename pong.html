@@ -1,313 +1,1042 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pong Game</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            font-family: 'Arial', sans-serif;
-        }
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-image: url("01jeefxncm45ckq4m8pe.webp");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        font-family: "Arial", sans-serif;
+      }
 
-        #gameContainer {
-            text-align: center;
-            color: white;
-        }
+      #gameContainer {
+        text-align: center;
+        color: white;
+      }
 
-        h1 {
-            margin-bottom: 20px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
+      h1 {
+        margin-bottom: 20px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
 
-        #gameCanvas {
-            border: 3px solid white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.3);
-            background: #000;
-        }
+      #gameCanvas {
+        border: 3px solid white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        background: #000;
+      }
 
-        #score {
-            margin-top: 20px;
-            font-size: 1.5em;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
+      #score {
+        margin-top: 20px;
+        font-size: 1.5em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
 
-        #instructions {
-            margin-top: 15px;
-            font-size: 1em;
-            opacity: 0.8;
-        }
+      #instructions {
+        margin-top: 15px;
+        font-size: 1em;
+        opacity: 0.8;
+      }
 
-        #gameOver {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-        }
+      #healthBar {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 200px;
+        height: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #4caf50;
+        border-radius: 10px;
+        overflow: hidden;
+      }
 
-        button {
-            background: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+      #healthFill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #8bc34a);
+        transition: width 0.3s ease;
+      }
 
-        button:hover {
-            background: #45a049;
+      #shieldBar {
+        position: absolute;
+        top: 35px;
+        left: 10px;
+        width: 200px;
+        height: 15px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #2196f3;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      #shieldFill {
+        height: 100%;
+        background: linear-gradient(90deg, #2196f3, #03a9f4);
+        transition: width 0.3s ease;
+      }
+
+      .loot-llama {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(45deg, #ff9800, #ffc107);
+        border-radius: 20px;
+        border: 3px solid #ff5722;
+        cursor: pointer;
+        animation: llamaBounce 2s infinite;
+        box-shadow: 0 0 15px rgba(255, 152, 0, 0.6);
+      }
+
+      @keyframes llamaBounce {
+        0%,
+        100% {
+          transform: translateY(0px);
         }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      .storm-zone {
+        position: absolute;
+        border: 3px dashed #ff4444;
+        background: rgba(255, 68, 68, 0.1);
+        animation: stormPulse 1s infinite;
+      }
+
+      @keyframes stormPulse {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+
+      #stormDamageMessage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        animation: stormDamagePulse 0.5s infinite;
+        display: none;
+      }
+
+      @keyframes stormDamagePulse {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 0.8;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.05);
+          opacity: 1;
+        }
+      }
+
+      .run-text {
+        color: #ffa500;
+        text-shadow: 0 0 10px #ffa500;
+        font-size: 22px;
+      }
+
+      #startMenu {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        border: 2px solid white;
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      #gameOver {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        display: none;
+      }
+
+      #pauseMenu {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        border: 2px solid white;
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        display: none;
+      }
+
+      button {
+        background: #4caf50;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 8px;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .pause-btn {
+        background: #ff9800;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+
+      .pause-btn:hover {
+        background: #f57c00;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="gameContainer">
-        <h1>PONG</h1>
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <div id="score">Player: 0 | Computer: 0</div>
-        <div id="instructions">Use W/S keys or ↑/↓ arrows for vertical movement, A/D keys or ←/→ arrows for horizontal movement</div>
-        
-        <div id="gameOver">
-            <h2>Game Over!</h2>
-            <div id="finalScore"></div>
-            <button onclick="restartGame()">Play Again</button>
+      <h1>PONG BATTLE ROYALE</h1>
+      <canvas id="gameCanvas" width="800" height="400"></canvas>
+      <div id="score">Player: 0 | Computer: 0</div>
+      <div id="instructions">
+        Use W/S keys or ↑/↓ arrows for vertical movement, A/D keys or ←/→ arrows
+        for horizontal movement. First to 6 or 7 points wins!
+      </div>
+
+      <!-- Storm and Health UI -->
+      <div id="stormDamageMessage" style="display: none">
+        You are in the storm. <span class="run-text">RUN!</span>
+      </div>
+
+      <div id="healthBar" style="display: none">
+        <div id="healthFill" style="width: 100%"></div>
+      </div>
+
+      <div id="shieldBar" style="display: none">
+        <div id="shieldFill" style="width: 0%"></div>
+      </div>
+
+      <button
+        id="pauseBtn"
+        class="pause-btn"
+        onclick="togglePause()"
+        style="display: none"
+      >
+        Pause
+      </button>
+
+      <div id="startMenu">
+        <h2>🌪️ PONG BATTLE ROYALE 🌪️</h2>
+        <div style="text-align: left; max-width: 500px; margin: 20px auto">
+          <h3>🎮 How to Play:</h3>
+          <p>
+            <strong>Movement:</strong> Use W/S or ↑/↓ arrows for vertical
+            movement, A/D or ←/→ arrows for horizontal movement
+          </p>
+
+          <h3>⚔️ Battle Royale Features:</h3>
+          <p>
+            <strong>Storm System:</strong> Purple storm shrinks over time - stay
+            in the safe zone!
+          </p>
+          <p>
+            <strong>Health & Shield:</strong> Manage your health (green) and
+            shield (blue) bars
+          </p>
+          <p>
+            <strong>Loot Llamas:</strong> Collect healing items from
+            Fortnite-style llamas
+          </p>
+          <p>
+            <strong>Storm Damage:</strong> Take damage when outside the safe
+            zone
+          </p>
+
+          <h3>🏆 Victory:</h3>
+          <p>
+            <strong>Win Condition:</strong> First to 6 or 7 points wins
+            (randomly chosen)
+          </p>
+          <p>
+            <strong>Survival:</strong> Avoid the storm and collect loot to stay
+            alive!
+          </p>
+
+          <h3>🎯 Tips:</h3>
+          <p>• Collect llamas for healing items</p>
+          <p>• Stay in the safe zone to avoid damage</p>
+          <p>• Use shield potions before health items</p>
+          <p>• The storm gets more dangerous over time!</p>
         </div>
+        <button onclick="startGame()">🚀 Start Battle Royale!</button>
+      </div>
+
+      <div id="pauseMenu">
+        <h2>Game Paused</h2>
+        <p>Press SPACE or click Resume to continue</p>
+        <button onclick="resumeGame()">Resume</button>
+        <button onclick="restartGame()">Restart</button>
+      </div>
+
+      <div id="gameOver">
+        <h2>Game Over!</h2>
+        <div id="finalScore"></div>
+        <button onclick="restartGame()">Play Again</button>
+      </div>
     </div>
 
     <script>
-        // Game variables
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Game state
-        let gameRunning = true;
-        let playerScore = 0;
-        let computerScore = 0;
-        
-        // Ball properties
-        const ball = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            radius: 10,
-            dx: 40,
-            dy: 40,
-            speed: 4
-        };
-        
-        // Paddle properties
-        const paddleHeight = 200;
-        const paddleWidth = 15;
-        const paddleSpeed = 6;
+      // Game variables
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
 
-        const paddleHeight2 = 3;
-        const paddleWidth2 = 15;
-        const paddleSpeed2 = 6;
-        
-        const playerPaddle = {
-            x: 20,
-            y: canvas.height / 2 - paddleHeight / 2,
-            width: paddleWidth,
-            height: paddleHeight,
-            speed: paddleSpeed
-        };
-        
-        const computerPaddle = {
-            x: canvas.width - 35,
-            y: canvas.height / 2 - paddleHeight2 / 2,
-            width: paddleWidth2,
-            height: paddleHeight2,
-            speed: paddleSpeed2
-        };
-        
-        // Input handling
-        const keys = {};
-        
-        document.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
-        
-        // Game functions
-        function drawBall() {
+      // Game state
+      let gameState = "menu"; // 'menu', 'playing', 'paused', 'gameOver'
+      let gameRunning = false;
+      let playerScore = 0;
+      let computerScore = 0;
+      let winCondition = Math.random() < 0.5 ? 6 : 7; // Randomly choose 6 or 7
+
+      // Storm system
+      let stormActive = false;
+      let stormRadius = 400; // Initial storm radius (half of canvas width)
+      let stormDamage = 0;
+      let stormPhase = 0;
+      let stormTimer = 0;
+
+      // Storm movement system
+      let stormCenterX = canvas.width / 2;
+      let stormCenterY = canvas.height / 2;
+      let stormTargetX = canvas.width / 2;
+      let stormTargetY = canvas.height / 2;
+      let stormMoveSpeed = 0.5;
+      let stormMoveTimer = 0;
+      let stormMoveInterval = 8000; // Move every 8 seconds
+
+      let stormPhases = [
+        { duration: 25000, damage: 1, shrinkRate: 0.5, moveSpeed: 0.2 }, // 25 seconds, 1 damage per second
+        { duration: 20000, damage: 2, shrinkRate: 0.8, moveSpeed: 0.3 }, // 20 seconds, 2 damage per second
+        { duration: 15000, damage: 3, shrinkRate: 1.2, moveSpeed: 0.5 }, // 15 seconds, 3 damage per second
+        { duration: 12000, damage: 4, shrinkRate: 1.8, moveSpeed: 0.8 }, // 12 seconds, 4 damage per second
+        { duration: 10000, damage: 5, shrinkRate: 2.5, moveSpeed: 1.0 }, // 10 seconds, 5 damage per second
+      ];
+
+      // Health and shield system
+      let playerHealth = 100;
+      let playerShield = 0;
+      let maxHealth = 100;
+      let maxShield = 100;
+      let inStorm = false;
+
+      // Loot llama system
+      let lootLlamas = [];
+      let llamaSpawnTimer = 0;
+      let llamaSpawnInterval = 8000; // Spawn every 8 seconds (faster spawn rate)
+      let llamaImage = new Image();
+      llamaImage.src = "Icon_Weapon_Llama.webp";
+      let items = [
+        { name: "Med Kit", type: "heal", value: 50, rarity: "rare" },
+        { name: "Shield Potion", type: "shield", value: 25, rarity: "common" },
+        { name: "Big Shield", type: "shield", value: 50, rarity: "uncommon" },
+        { name: "Bandages", type: "heal", value: 15, rarity: "common" },
+        { name: "Slurp Juice", type: "both", value: 25, rarity: "epic" },
+      ];
+
+      // Ball properties
+      const ball = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        radius: 10,
+        dx: 60,
+        dy: 60,
+        speed: 6,
+      };
+
+      // Paddle properties
+      const paddleHeight = 200;
+      const paddleWidth = 15;
+      const paddleSpeed = 6;
+
+      const paddleHeight2 = 3;
+      const paddleWidth2 = 15;
+      const paddleSpeed2 = 6;
+
+      const playerPaddle = {
+        x: 20,
+        y: canvas.height / 2 - paddleHeight / 2,
+        width: paddleWidth,
+        height: paddleHeight,
+        speed: paddleSpeed,
+      };
+
+      const computerPaddle = {
+        x: canvas.width - 35,
+        y: canvas.height / 2 - paddleHeight2 / 2,
+        width: paddleWidth2,
+        height: paddleHeight2,
+        speed: paddleSpeed2,
+      };
+
+      // Input handling
+      const keys = {};
+
+      document.addEventListener("keydown", (e) => {
+        keys[e.key.toLowerCase()] = true;
+
+        // Handle pause with spacebar
+        if (e.key === " " && gameState === "playing") {
+          e.preventDefault();
+          togglePause();
+        } else if (e.key === " " && gameState === "paused") {
+          e.preventDefault();
+          resumeGame();
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        keys[e.key.toLowerCase()] = false;
+      });
+
+      // Game functions
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function drawPaddle(paddle) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+      }
+
+      function drawCenterLine() {
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      function drawStorm() {
+        if (!stormActive) return;
+
+        // Draw storm zone with purple theme
+        const centerX = stormCenterX;
+        const centerY = stormCenterY;
+
+        // Storm damage area (outside the circle) - Purple storm
+        ctx.fillStyle = "rgba(128, 0, 255, 0.15)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Clear the safe zone
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, stormRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+
+        // Storm zone circle with purple gradient
+        const gradient = ctx.createRadialGradient(
+          centerX,
+          centerY,
+          stormRadius - 20,
+          centerX,
+          centerY,
+          stormRadius
+        );
+        gradient.addColorStop(0, "rgba(128, 0, 255, 0.3)");
+        gradient.addColorStop(1, "rgba(128, 0, 255, 0.8)");
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, stormRadius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Storm border with pulsing effect
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, stormRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = "#8000ff";
+        ctx.lineWidth = 6;
+        ctx.setLineDash([15, 10]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Inner storm effect
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, stormRadius - 10, 0, Math.PI * 2);
+        ctx.strokeStyle = "#ff00ff";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Storm particles effect
+        for (let i = 0; i < 20; i++) {
+          const angle = (Math.PI * 2 * i) / 20;
+          const particleX = centerX + Math.cos(angle) * stormRadius;
+          const particleY = centerY + Math.sin(angle) * stormRadius;
+
+          ctx.beginPath();
+          ctx.arc(particleX, particleY, 3, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(255, 0, 255, 0.6)";
+          ctx.fill();
+        }
+      }
+
+      function drawLootLlamas() {
+        lootLlamas.forEach((llama, index) => {
+          // Draw the llama image
+          if (llamaImage.complete) {
+            // Add glow effect
+            ctx.shadowColor = "#FFD700";
+            ctx.shadowBlur = 15;
+
+            // Draw the llama image centered on the llama position
+            const imageSize = 50; // Size of the llama image
+            ctx.drawImage(
+              llamaImage,
+              llama.x - imageSize / 2,
+              llama.y - imageSize / 2,
+              imageSize,
+              imageSize
+            );
+
+            // Reset shadow
+            ctx.shadowBlur = 0;
+          } else {
+            // Fallback: draw a simple circle while image loads
+            ctx.fillStyle = "#ff9800";
             ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'white';
+            ctx.arc(llama.x, llama.y, 20, 0, Math.PI * 2);
             ctx.fill();
-            ctx.closePath();
+          }
+        });
+      }
+
+      function updateStorm() {
+        if (!stormActive) return;
+
+        stormTimer += 16; // Assuming 60fps
+        stormMoveTimer += 16;
+
+        // Check if we need to move to next phase
+        if (
+          stormPhase < stormPhases.length - 1 &&
+          stormTimer >= stormPhases[stormPhase].duration
+        ) {
+          stormPhase++;
+          stormTimer = 0;
         }
-        
-        function drawPaddle(paddle) {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+        const currentPhase = stormPhases[stormPhase];
+
+        // Move storm center towards target
+        const dx = stormTargetX - stormCenterX;
+        const dy = stormTargetY - stormCenterY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 1) {
+          stormCenterX += (dx / distance) * currentPhase.moveSpeed;
+          stormCenterY += (dy / distance) * currentPhase.moveSpeed;
         }
-        
-        function drawCenterLine() {
-            ctx.setLineDash([10, 10]);
-            ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, 0);
-            ctx.lineTo(canvas.width / 2, canvas.height);
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.setLineDash([]);
+
+        // Change storm target position periodically
+        if (stormMoveTimer >= stormMoveInterval) {
+          stormTargetX = Math.random() * (canvas.width - 200) + 100;
+          stormTargetY = Math.random() * (canvas.height - 200) + 100;
+          stormMoveTimer = 0;
+          stormMoveInterval = Math.max(5000, 12000 - stormPhase * 1500); // Slower movement, more gradual changes
         }
-        
-        function updatePlayerPaddle() {
-            // Vertical movement
-            if ((keys['w'] || keys['arrowup']) && playerPaddle.y > 0) {
-                playerPaddle.y -= playerPaddle.speed;
-            }
-            if ((keys['s'] || keys['arrowdown']) && playerPaddle.y < canvas.height - playerPaddle.height) {
-                playerPaddle.y += playerPaddle.speed;
-            }
-            
-            // Horizontal movement
-            if ((keys['a'] || keys['arrowleft']) && playerPaddle.x > 0) {
-                playerPaddle.x -= playerPaddle.speed;
-            }
-            if ((keys['d'] || keys['arrowright']) && playerPaddle.x < canvas.width - playerPaddle.width) {
-                playerPaddle.x += playerPaddle.speed;
-            }
+
+        // Shrink storm radius
+        if (stormRadius > 80) {
+          // Minimum storm size - increased to allow survival
+          stormRadius -= currentPhase.shrinkRate;
+          if (stormRadius < 80) stormRadius = 80;
         }
-        
-        function updateComputerPaddle() {
-            const paddleCenter = computerPaddle.y + computerPaddle.height / 2;
-            const ballCenter = ball.y;
-            
-            if (paddleCenter < ballCenter - 10) {
-                computerPaddle.y += computerPaddle.speed;
-            } else if (paddleCenter > ballCenter + 10) {
-                computerPaddle.y -= computerPaddle.speed;
-            }
-            
-            // Keep paddle within bounds
-            if (computerPaddle.y < 0) {
-                computerPaddle.y = 0;
-            } else if (computerPaddle.y > canvas.height - computerPaddle.height) {
-                computerPaddle.y = canvas.height - computerPaddle.height;
-            }
+
+        // Check if player is in storm
+        const playerDistance = Math.sqrt(
+          Math.pow(playerPaddle.x + playerPaddle.width / 2 - stormCenterX, 2) +
+            Math.pow(playerPaddle.y + playerPaddle.height / 2 - stormCenterY, 2)
+        );
+
+        if (playerDistance > stormRadius) {
+          // Player is in storm, take damage
+          if (!inStorm) {
+            inStorm = true;
+            document.getElementById("stormDamageMessage").style.display =
+              "block";
+          }
+          takeDamage(currentPhase.damage);
+        } else {
+          // Player is safe from storm
+          if (inStorm) {
+            inStorm = false;
+            document.getElementById("stormDamageMessage").style.display =
+              "none";
+          }
         }
-        
-        function updateBall() {
-            ball.x += ball.dx;
-            ball.y += ball.dy;
-            
-            // Ball collision with top and bottom walls
-            if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvas.height) {
-                ball.dy = -ball.dy;
+      }
+
+      function takeDamage(amount) {
+        if (playerShield > 0) {
+          playerShield -= amount;
+          if (playerShield < 0) {
+            playerHealth += playerShield; // Negative shield becomes health damage
+            playerShield = 0;
+          }
+        } else {
+          playerHealth -= amount;
+        }
+
+        if (playerHealth <= 0) {
+          playerHealth = 0;
+          gameOver();
+        }
+
+        updateHealthUI();
+      }
+
+      function updateHealthUI() {
+        const healthPercent = (playerHealth / maxHealth) * 100;
+        const shieldPercent = (playerShield / maxShield) * 100;
+
+        document.getElementById("healthFill").style.width = healthPercent + "%";
+        document.getElementById("shieldFill").style.width = shieldPercent + "%";
+      }
+
+      function spawnLootLlama() {
+        const llama = {
+          x: Math.random() * (canvas.width - 40) + 20,
+          y: Math.random() * (canvas.height - 40) + 20,
+          items: generateLootItems(),
+          collected: false,
+        };
+        lootLlamas.push(llama);
+      }
+
+      function generateLootItems() {
+        const numItems = Math.floor(Math.random() * 3) + 1; // 1-3 items
+        const loot = [];
+
+        for (let i = 0; i < numItems; i++) {
+          const randomItem = items[Math.floor(Math.random() * items.length)];
+          loot.push({ ...randomItem });
+        }
+
+        return loot;
+      }
+
+      function checkLlamaCollection() {
+        lootLlamas.forEach((llama, index) => {
+          if (llama.collected) return;
+
+          const playerCenterX = playerPaddle.x + playerPaddle.width / 2;
+          const playerCenterY = playerPaddle.y + playerPaddle.height / 2;
+          const distance = Math.sqrt(
+            Math.pow(playerCenterX - llama.x, 2) +
+              Math.pow(playerCenterY - llama.y, 2)
+          );
+
+          if (distance < 60) {
+            // Collection range - increased from 30 to 60 for easier collection
+            collectLoot(llama.items);
+            llama.collected = true;
+            lootLlamas.splice(index, 1);
+          }
+        });
+      }
+
+      function collectLoot(items) {
+        items.forEach((item) => {
+          if (item.type === "heal") {
+            playerHealth = Math.min(maxHealth, playerHealth + item.value);
+          } else if (item.type === "shield") {
+            playerShield = Math.min(maxShield, playerShield + item.value);
+          } else if (item.type === "both") {
+            playerHealth = Math.min(maxHealth, playerHealth + item.value);
+            playerShield = Math.min(maxShield, playerShield + item.value);
+          }
+
+          // Show collection message
+          showMessage(`Found ${item.name}! (+${item.value})`);
+        });
+
+        updateHealthUI();
+      }
+
+      function showMessage(text) {
+        // Simple message display (could be enhanced with better UI)
+        console.log(text);
+      }
+
+      function resetStorm() {
+        // Reset storm to initial state
+        stormRadius = 400;
+        stormPhase = 0;
+        stormTimer = 0;
+        stormCenterX = canvas.width / 2;
+        stormCenterY = canvas.height / 2;
+        stormTargetX = canvas.width / 2;
+        stormTargetY = canvas.height / 2;
+        stormMoveTimer = 0;
+        stormMoveInterval = 8000;
+
+        // Show reset message
+        showMessage("Storm Reset! Safe zone expanded!");
+      }
+
+      function updatePlayerPaddle() {
+        // Vertical movement
+        if ((keys["w"] || keys["arrowup"]) && playerPaddle.y > 0) {
+          playerPaddle.y -= playerPaddle.speed;
+        }
+        if (
+          (keys["s"] || keys["arrowdown"]) &&
+          playerPaddle.y < canvas.height - playerPaddle.height
+        ) {
+          playerPaddle.y += playerPaddle.speed;
+        }
+
+        // Horizontal movement
+        if ((keys["a"] || keys["arrowleft"]) && playerPaddle.x > 0) {
+          playerPaddle.x -= playerPaddle.speed;
+        }
+        if (
+          (keys["d"] || keys["arrowright"]) &&
+          playerPaddle.x < canvas.width - playerPaddle.width
+        ) {
+          playerPaddle.x += playerPaddle.speed;
+        }
+      }
+
+      function updateComputerPaddle() {
+        const paddleCenter = computerPaddle.y + computerPaddle.height / 2;
+        const ballCenter = ball.y;
+
+        if (paddleCenter < ballCenter - 10) {
+          computerPaddle.y += computerPaddle.speed;
+        } else if (paddleCenter > ballCenter + 10) {
+          computerPaddle.y -= computerPaddle.speed;
+        }
+
+        // Keep paddle within bounds
+        if (computerPaddle.y < 0) {
+          computerPaddle.y = 0;
+        } else if (computerPaddle.y > canvas.height - computerPaddle.height) {
+          computerPaddle.y = canvas.height - computerPaddle.height;
+        }
+      }
+
+      function updateBall() {
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        // Ball collision with top and bottom walls
+        if (ball.y - ball.radius <= 0) {
+          ball.y = ball.radius; // Prevent ball from getting stuck
+          ball.dy = Math.abs(ball.dy); // Ensure positive direction
+        }
+        if (ball.y + ball.radius >= canvas.height) {
+          ball.y = canvas.height - ball.radius; // Prevent ball from getting stuck
+          ball.dy = -Math.abs(ball.dy); // Ensure negative direction
+        }
+
+        // Improved ball collision with paddles
+        // Player paddle collision (left side)
+        if (ball.dx < 0) {
+          // Ball moving left
+          // Check if ball is in the horizontal range of the paddle
+          if (
+            ball.x - ball.radius <= playerPaddle.x + playerPaddle.width &&
+            ball.x + ball.radius >= playerPaddle.x
+          ) {
+            // Check if ball is in the vertical range of the paddle
+            if (
+              ball.y + ball.radius >= playerPaddle.y &&
+              ball.y - ball.radius <= playerPaddle.y + playerPaddle.height
+            ) {
+              // Calculate hit position for better physics
+              const hitPos =
+                (ball.y - (playerPaddle.y + playerPaddle.height / 2)) /
+                (playerPaddle.height / 2);
+
+              // Calculate new velocity based on hit position
+              const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+              const newSpeed = Math.min(speed * 1.1, 8); // Cap maximum speed
+
+              // Bounce the ball with improved physics
+              ball.dx = Math.abs(ball.dx); // Ensure positive direction
+              ball.dy = hitPos * newSpeed * 0.8;
+
+              // Add paddle movement influence
+              const paddleVelocity =
+                keys["w"] || keys["arrowup"]
+                  ? -2
+                  : keys["s"] || keys["arrowdown"]
+                  ? 2
+                  : 0;
+              ball.dy += paddleVelocity;
+
+              // Ensure minimum speed
+              if (ball.dx < 3) ball.dx = 3;
+              if (Math.abs(ball.dy) < 1) ball.dy = ball.dy > 0 ? 1 : -1;
+
+              // Add some randomness to prevent infinite loops
+              ball.dy += (Math.random() - 0.5) * 1;
             }
-            
-            // Ball collision with paddles
-            if (ball.x - ball.radius <= playerPaddle.x + playerPaddle.width &&
-                ball.y + ball.radius >= playerPaddle.y &&
-                ball.y - ball.radius <= playerPaddle.y + playerPaddle.height &&
-                ball.dx < 0) {
-                ball.dx = -ball.dx;
-                // Add some angle based on where the ball hits the paddle
-                const hitPos = (ball.y - (playerPaddle.y + playerPaddle.height / 2)) / (playerPaddle.height / 2);
-                ball.dy = hitPos * ball.speed;
+          }
+        }
+
+        // Computer paddle collision (right side)
+        if (ball.dx > 0) {
+          // Ball moving right
+          // Check if ball is in the horizontal range of the paddle
+          if (
+            ball.x + ball.radius >= computerPaddle.x &&
+            ball.x - ball.radius <= computerPaddle.x + computerPaddle.width
+          ) {
+            // Check if ball is in the vertical range of the paddle
+            if (
+              ball.y + ball.radius >= computerPaddle.y &&
+              ball.y - ball.radius <= computerPaddle.y + computerPaddle.height
+            ) {
+              // Calculate hit position for better physics
+              const hitPos =
+                (ball.y - (computerPaddle.y + computerPaddle.height / 2)) /
+                (computerPaddle.height / 2);
+
+              // Calculate new velocity based on hit position
+              const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+              const newSpeed = Math.min(speed * 1.1, 8); // Cap maximum speed
+
+              // Bounce the ball with improved physics
+              ball.dx = -Math.abs(ball.dx); // Ensure negative direction
+              ball.dy = hitPos * newSpeed * 0.8;
+
+              // Ensure minimum speed
+              if (ball.dx > -3) ball.dx = -3;
+              if (Math.abs(ball.dy) < 1) ball.dy = ball.dy > 0 ? 1 : -1;
+
+              // Add some randomness to prevent infinite loops
+              ball.dy += (Math.random() - 0.5) * 1;
             }
-            
-            if (ball.x + ball.radius >= computerPaddle.x &&
-                ball.y + ball.radius >= computerPaddle.y &&
-                ball.y - ball.radius <= computerPaddle.y + computerPaddle.height &&
-                ball.dx > 0) {
-                ball.dx = -ball.dx;
-                // Add some angle based on where the ball hits the paddle
-                const hitPos = (ball.y - (computerPaddle.y + computerPaddle.height / 2)) / (computerPaddle.height / 2);
-                ball.dy = hitPos * ball.speed;
-            }
-            
-            // Scoring
-            if (ball.x < 0) {
-                computerScore++;
-                resetBall();
-            } else if (ball.x > canvas.width) {
-                playerScore++;
-                resetBall();
-            }
-            
-            // Check for game over
-            if (playerScore >= 10 || computerScore >= 10) {
-                gameOver();
-            }
+          }
         }
-        
-        function resetBall() {
-            ball.x = canvas.width / 2;
-            ball.y = canvas.height / 2;
-            ball.dx = (Math.random() < 0.5 ? -1 : 1) * ball.speed;
-            ball.dy = (Math.random() - 0.5) * ball.speed;
+
+        // Scoring
+        if (ball.x < 0) {
+          computerScore++;
+          resetBall();
+          resetStorm(); // Reset storm when computer scores
+        } else if (ball.x > canvas.width) {
+          playerScore++;
+          resetBall();
+          resetStorm(); // Reset storm when player scores
         }
-        
-        function updateScore() {
-            document.getElementById('score').textContent = `Player: ${playerScore} | Computer: ${computerScore}`;
+
+        // Check for game over
+        if (playerScore >= winCondition || computerScore >= winCondition) {
+          gameOver();
         }
-        
-        function gameOver() {
-            gameRunning = false;
-            const winner = playerScore >= 1 ? 'Player' : 'Computer';
-            document.getElementById('finalScore').textContent = `${winner} wins! Final Score: ${playerScore} - ${computerScore}`;
-            document.getElementById('gameOver').style.display = 'block';
-        }
-        
-        function restartGame() {
-            gameRunning = true;
-            playerScore = 0;
-            computerScore = 0;
-            resetBall();
-            playerPaddle.y = canvas.height / 2 - playerPaddle.height / 2;
-            playerPaddle.x = 20;
-            computerPaddle.y = canvas.height / 2 - computerPaddle.height / 2;
-            document.getElementById('gameOver').style.display = 'none';
-            updateScore();
-            gameLoop();
-        }
-        
-        function gameLoop() {
-            if (!gameRunning) return;
-            
-            // Clear canvas
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw game elements
-            drawCenterLine();
-            drawBall();
-            drawPaddle(playerPaddle);
-            drawPaddle(computerPaddle);
-            
-            // Update game state
-            updatePlayerPaddle();
-            updateComputerPaddle();
-            updateBall();
-            updateScore();
-            
-            // Continue game loop
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Start the game
-        updateScore();
+      }
+
+      function resetBall() {
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.dx = (Math.random() < 0.5 ? -1 : 1) * ball.speed;
+        ball.dy = (Math.random() - 0.5) * ball.speed;
+
+        // Ensure minimum speed (increased for faster gameplay)
+        if (Math.abs(ball.dx) < 4) ball.dx = ball.dx > 0 ? 4 : -4;
+        if (Math.abs(ball.dy) < 2) ball.dy = ball.dy > 0 ? 2 : -2;
+      }
+
+      function updateScore() {
+        document.getElementById(
+          "score"
+        ).textContent = `Player: ${playerScore} | Computer: ${computerScore}`;
+      }
+
+      function gameOver() {
+        gameState = "gameOver";
+        gameRunning = false;
+        const winner = playerScore >= winCondition ? "Player" : "Computer";
+        document.getElementById(
+          "finalScore"
+        ).textContent = `${winner} wins! Final Score: ${playerScore} - ${computerScore} (First to ${winCondition})`;
+        document.getElementById("gameOver").style.display = "block";
+        document.getElementById("pauseBtn").style.display = "none";
+      }
+
+      function startGame() {
+        gameState = "playing";
+        gameRunning = true;
+        document.getElementById("startMenu").style.display = "none";
+        document.getElementById("pauseBtn").style.display = "block";
+
+        // Activate storm and health systems
+        stormActive = true;
+        document.getElementById("healthBar").style.display = "block";
+        document.getElementById("shieldBar").style.display = "block";
+
+        // Reset health and shield
+        playerHealth = 100;
+        playerShield = 0;
+        updateHealthUI();
+
         gameLoop();
+      }
+
+      function togglePause() {
+        if (gameState === "playing") {
+          gameState = "paused";
+          gameRunning = false;
+          document.getElementById("pauseMenu").style.display = "block";
+          document.getElementById("pauseBtn").textContent = "Resume";
+        }
+      }
+
+      function resumeGame() {
+        gameState = "playing";
+        gameRunning = true;
+        document.getElementById("pauseMenu").style.display = "none";
+        document.getElementById("pauseBtn").textContent = "Pause";
+        gameLoop();
+      }
+
+      function restartGame() {
+        gameState = "playing";
+        gameRunning = true;
+        playerScore = 0;
+        computerScore = 0;
+        winCondition = Math.random() < 0.5 ? 6 : 7; // New random win condition
+
+        // Reset storm and health systems
+        stormActive = true;
+        stormRadius = 400;
+        stormPhase = 0;
+        stormTimer = 0;
+        stormCenterX = canvas.width / 2;
+        stormCenterY = canvas.height / 2;
+        stormTargetX = canvas.width / 2;
+        stormTargetY = canvas.height / 2;
+        stormMoveTimer = 0;
+        stormMoveInterval = 8000;
+        playerHealth = 100;
+        playerShield = 0;
+        inStorm = false;
+        lootLlamas = [];
+        llamaSpawnTimer = 0;
+
+        resetBall();
+        playerPaddle.y = canvas.height / 2 - playerPaddle.height / 2;
+        playerPaddle.x = 20;
+        computerPaddle.y = canvas.height / 2 - computerPaddle.height / 2;
+        document.getElementById("gameOver").style.display = "none";
+        document.getElementById("pauseMenu").style.display = "none";
+        document.getElementById("pauseBtn").style.display = "block";
+        document.getElementById("pauseBtn").textContent = "Pause";
+        updateScore();
+        updateHealthUI();
+        gameLoop();
+      }
+
+      function gameLoop() {
+        if (!gameRunning) return;
+
+        // Clear canvas
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw storm
+        drawStorm();
+
+        // Draw game elements
+        drawCenterLine();
+        drawBall();
+        drawPaddle(playerPaddle);
+        drawPaddle(computerPaddle);
+
+        // Draw loot llamas
+        drawLootLlamas();
+
+        // Update game state
+        updatePlayerPaddle();
+        updateComputerPaddle();
+        updateBall();
+        updateScore();
+
+        // Update storm system
+        updateStorm();
+
+        // Update loot llama system
+        llamaSpawnTimer += 16;
+
+        // Faster spawn rate in later storm phases
+        const currentSpawnInterval = Math.max(
+          5000,
+          llamaSpawnInterval - stormPhase * 1000
+        );
+
+        if (llamaSpawnTimer >= currentSpawnInterval) {
+          spawnLootLlama();
+          llamaSpawnTimer = 0;
+        }
+        checkLlamaCollection();
+
+        // Continue game loop
+        requestAnimationFrame(gameLoop);
+      }
+
+      // Initialize the game
+      updateScore();
     </script>
-</body>
+  </body>
 </html>
