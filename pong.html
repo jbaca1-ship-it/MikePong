@@ -236,7 +236,7 @@
   <body>
     <div id="gameContainer">
       <h1>PONG BATTLE ROYALE</h1>
-      <canvas id="gameCanvas" width="800" height="400"></canvas>
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
       <div id="score">Player: 0 | Computer: 0</div>
       <div id="instructions">
         Use W/S keys or ↑/↓ arrows for vertical movement, A/D keys or ←/→ arrows
@@ -339,7 +339,7 @@
 
       // Storm system
       let stormActive = false;
-      let stormRadius = 400; // Initial storm radius (half of canvas width)
+      let stormRadius = 500; // Initial storm radius (adjusted for taller canvas)
       let stormDamage = 0;
       let stormPhase = 0;
       let stormTimer = 0;
@@ -449,6 +449,13 @@
       function drawPaddle(paddle) {
         ctx.fillStyle = "white";
         ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+        // Debug: Draw paddle outline to verify hitbox
+        if (paddle === playerPaddle) {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
       }
 
       function drawCenterLine() {
@@ -652,9 +659,15 @@
       }
 
       function spawnLootLlama() {
+        // Calculate center rectangle bounds (1/2 width and 1/2 height in the middle)
+        const centerRectWidth = canvas.width / 2;
+        const centerRectHeight = canvas.height / 2;
+        const centerRectX = (canvas.width - centerRectWidth) / 2;
+        const centerRectY = (canvas.height - centerRectHeight) / 2;
+
         const llama = {
-          x: Math.random() * (canvas.width - 40) + 20,
-          y: Math.random() * (canvas.height - 40) + 20,
+          x: Math.random() * (centerRectWidth - 40) + centerRectX + 20,
+          y: Math.random() * (centerRectHeight - 40) + centerRectY + 20,
           items: generateLootItems(),
           collected: false,
         };
@@ -718,7 +731,7 @@
 
       function resetStorm() {
         // Reset storm to initial state
-        stormRadius = 400;
+        stormRadius = 500;
         stormPhase = 0;
         stormTimer = 0;
         stormCenterX = canvas.width / 2;
@@ -802,6 +815,15 @@
               ball.y + ball.radius >= playerPaddle.y &&
               ball.y - ball.radius <= playerPaddle.y + playerPaddle.height
             ) {
+              // Debug: Log collision detection
+              console.log("Player paddle collision detected!");
+              console.log("Ball position:", ball.x, ball.y);
+              console.log("Paddle position:", playerPaddle.x, playerPaddle.y);
+              console.log(
+                "Paddle dimensions:",
+                playerPaddle.width,
+                playerPaddle.height
+              );
               // Calculate hit position for better physics
               const hitPos =
                 (ball.y - (playerPaddle.y + playerPaddle.height / 2)) /
@@ -960,7 +982,7 @@
 
         // Reset storm and health systems
         stormActive = true;
-        stormRadius = 400;
+        stormRadius = 500;
         stormPhase = 0;
         stormTimer = 0;
         stormCenterX = canvas.width / 2;
